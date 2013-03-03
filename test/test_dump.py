@@ -1,8 +1,8 @@
 import os
 from cStringIO import StringIO
-import libpry
 from libmproxy import dump, flow, proxy
 import tutils
+import mock
 
 def test_strfuncs():
     t = tutils.tresp()
@@ -21,6 +21,7 @@ class TestDumpMaster:
         req = tutils.treq()
         req.content = content
         l = proxy.Log("connect")
+        l.reply = mock.MagicMock()
         m.handle_log(l)
         cc = req.client_conn
         cc.connection_error = "error"
@@ -29,7 +30,9 @@ class TestDumpMaster:
         m.handle_clientconnect(cc)
         m.handle_request(req)
         f = m.handle_response(resp)
-        m.handle_clientdisconnect(flow.ClientDisconnect(cc))
+        cd = flow.ClientDisconnect(cc)
+        cd.reply = mock.MagicMock()
+        m.handle_clientdisconnect(cd)
         return f
 
     def _dummy_cycle(self, n, filt, content, **options):
@@ -61,7 +64,7 @@ class TestDumpMaster:
         cs = StringIO()
 
         o = dump.Options(server_replay="nonexistent", kill=True)
-        libpry.raises(dump.DumpError, dump.DumpMaster, None, o, None, outfile=cs)
+        tutils.raises(dump.DumpError, dump.DumpMaster, None, o, None, outfile=cs)
 
         with tutils.tmpdir() as t:
             p = os.path.join(t, "rep")
@@ -86,7 +89,7 @@ class TestDumpMaster:
             self._flowfile(p)
             assert "GET" in self._dummy_cycle(0, None, "", verbosity=1, rfile=p)
 
-            libpry.raises(
+            tutils.raises(
                 dump.DumpError, self._dummy_cycle,
                 0, None, "", verbosity=1, rfile="/nonexistent"
             )
@@ -97,7 +100,6 @@ class TestDumpMaster:
     def test_options(self):
         o = dump.Options(verbosity = 2)
         assert o.verbosity == 2
-        libpry.raises(AttributeError, dump.Options, nonexistent = 2)
 
     def test_filter(self):
         assert not "GET" in self._dummy_cycle(1, "~u foo", "", verbosity=1)
@@ -127,7 +129,7 @@ class TestDumpMaster:
             assert len(list(flow.FlowReader(open(p)).stream())) == 1
 
     def test_write_err(self):
-        libpry.raises(
+        tutils.raises(
             dump.DumpError,
             self._dummy_cycle,
             1,
@@ -145,11 +147,11 @@ class TestDumpMaster:
         assert "XREQUEST" in ret
         assert "XRESPONSE" in ret
         assert "XCLIENTDISCONNECT" in ret
-        libpry.raises(
+        tutils.raises(
             dump.DumpError,
             self._dummy_cycle, 1, None, "", script="nonexistent"
         )
-        libpry.raises(
+        tutils.raises(
             dump.DumpError,
             self._dummy_cycle, 1, None, "", script="starterr.py"
         )

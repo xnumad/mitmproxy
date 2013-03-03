@@ -195,9 +195,6 @@ class StatusBar(common.WWrap):
         if self.master.stream:
             r.append("[W:%s]"%self.master.stream_path)
 
-        if self.master.state.last_saveload:
-            r.append("[%s]"%self.master.state.last_saveload)
-
         return r
 
     def redraw(self):
@@ -328,7 +325,7 @@ class ConsoleState(flow.State):
 
 
 class Options(object):
-    __slots__ = [
+    attributes = [
         "anticache",
         "anticomp",
         "client_replay",
@@ -355,7 +352,7 @@ class Options(object):
     def __init__(self, **kwargs):
         for k, v in kwargs.items():
             setattr(self, k, v)
-        for i in self.__slots__:
+        for i in self.attributes:
             if not hasattr(self, i):
                 setattr(self, i, None)
 
@@ -580,7 +577,7 @@ class ConsoleMaster(flow.FlowMaster):
 
         self.view_flowlist()
 
-        self.server.start_slave(controller.Slave, self.masterq)
+        self.server.start_slave(controller.Slave, controller.Channel(self.masterq))
 
         if self.options.rfile:
             ret = self.load_flows(self.options.rfile)
@@ -1002,7 +999,7 @@ class ConsoleMaster(flow.FlowMaster):
         if self.state.intercept and f.match(self.state.intercept) and not f.request.is_replay():
             f.intercept()
         else:
-            r._ack()
+            r.reply()
         self.sync_list_view()
         self.refresh_flow(f)
 
@@ -1023,7 +1020,7 @@ class ConsoleMaster(flow.FlowMaster):
     # Handlers
     def handle_log(self, l):
         self.add_event(l.msg)
-        l._ack()
+        l.reply()
 
     def handle_error(self, r):
         f = flow.FlowMaster.handle_error(self, r)

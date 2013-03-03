@@ -22,7 +22,7 @@ class DumpError(Exception): pass
 
 
 class Options(object):
-    _slots = [
+    attributes = [
         "anticache",
         "anticomp",
         "client_replay",
@@ -46,7 +46,7 @@ class Options(object):
     def __init__(self, **kwargs):
         for k, v in kwargs.items():
             setattr(self, k, v)
-        for i in self._slots:
+        for i in self.attributes:
             if not hasattr(self, i):
                 setattr(self, i, None)
 
@@ -151,16 +151,6 @@ class DumpMaster(flow.FlowMaster):
             print >> self.outfile, e
             self.outfile.flush()
 
-    def handle_log(self, l):
-        self.add_event(l.msg)
-        l._ack()
-
-    def handle_request(self, r):
-        f = flow.FlowMaster.handle_request(self, r)
-        if f:
-            r._ack()
-        return f
-
     def indent(self, n, t):
         l = str(t).strip().split("\n")
         return "\n".join(" "*n + i for i in l)
@@ -211,10 +201,20 @@ class DumpMaster(flow.FlowMaster):
             self.outfile.flush()
         self.state.delete_flow(f)
 
+    def handle_log(self, l):
+        self.add_event(l.msg)
+        l.reply()
+
+    def handle_request(self, r):
+        f = flow.FlowMaster.handle_request(self, r)
+        if f:
+            r.reply()
+        return f
+
     def handle_response(self, msg):
         f = flow.FlowMaster.handle_response(self, msg)
         if f:
-            msg._ack()
+            msg.reply()
             self._process_flow(f)
         return f
 
