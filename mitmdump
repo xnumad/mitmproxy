@@ -17,7 +17,7 @@
 
 import sys, signal
 from libmproxy import proxy, dump, cmdline, version
-import argparse
+import argparse 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(usage = "%(prog)s [options] [filter]")
