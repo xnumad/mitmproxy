@@ -47,6 +47,7 @@ EventList = VirtualScrollMixin(EventList, {
     rowHeightMin: 15,
     placeholder: "div"
 });
+EventList = AutoScrollMixin(EventList);
 
 class EventLogContents extends React.Component {
     componentWillMount() {

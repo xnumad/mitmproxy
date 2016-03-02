@@ -15,7 +15,7 @@ var allTabs = {
 };
 
 var FlowView = React.createClass({
-    mixins: [StickyHeadMixin, Router],
+    mixins: [Router],
     getInitialState: function () {
         return {
             prompt: false
@@ -78,6 +78,10 @@ var FlowView = React.createClass({
             }
         });
     },
+    onScroll: function(){
+        var head = ReactDOM.findDOMNode(this.refs.head);
+        head.style.transform = "translate(0," + ReactDOM.findDOMNode(this).scrollTop + "px)";
+    },
     render: function () {
         var flow = this.props.flow;
         var tabs = this.getTabs(flow);
@@ -101,7 +105,7 @@ var FlowView = React.createClass({
 
         var Tab = allTabs[active];
         return (
-            <div className="flow-detail" onScroll={this.adjustHead}>
+            <div className="flow-detail" onScroll={this.onScroll}>
                 <Nav ref="head"
                      flow={flow}
                      tabs={tabs}

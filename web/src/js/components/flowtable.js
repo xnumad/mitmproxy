@@ -1,6 +1,6 @@
 import React from "react";
 import ReactDOM from 'react-dom';
-import {StickyHeadMixin, AutoScrollMixin} from "./common.js";
+import {AutoScrollMixin} from "./common.js";
 import {reverseString} from "../utils.js";
 import _ from "lodash";
 
@@ -105,40 +105,50 @@ var FlowTableHead = React.createClass({
 });
 
 
-let FlowList = (props) => {
-    const rows = props.elements.map((flow) => {
-        var selected = (flow === props.selected);
-        var highlighted = props.highlight[flow.id];
+class FlowList extends React.Component {
+    onScroll(){
+        var head = ReactDOM.findDOMNode(this.refs.head);
+        head.style.transform = "translate(0," + ReactDOM.findDOMNode(this).scrollTop + "px)";
+        this.props.onScroll();
+    }
+    render() {
+        const props = this.props;
+        const rows = props.elements.map((flow) => {
+            var selected = (flow === props.selected);
+            var highlighted = props.highlight[flow.id];
 
-        return <FlowRow key={flow.id}
-            flow={flow}
-            columns={props.columns}
-            selected={selected}
-            highlighted={highlighted}
-            selectFlow={props.selectFlow}
-        />;
-    });
-    return <div className="flow-table" onScroll={props.onScroll}>
-        <table>
-            <FlowTableHead
-                columns={props.columns}
-                setSortKeyFun={props.setSortKeyFun}/>
-            <tbody>
-            { props.placeholderTop }
-            {rows}
-            { props.placeholderBottom }
-            </tbody>
-        </table>
-    </div>;
-};
+            return <FlowRow key={flow.id}
+                            flow={flow}
+                            columns={props.columns}
+                            selected={selected}
+                            highlighted={highlighted}
+                            selectFlow={props.selectFlow}
+            />;
+        });
+        return <div className="flow-table" onScroll={() => this.onScroll()}>
+            <table>
+                <FlowTableHead
+                    ref="head"
+                    columns={props.columns}
+                    setSortKeyFun={props.setSortKeyFun}/>
+                <tbody>
+                { props.placeholderTop }
+                {rows}
+                { props.placeholderBottom }
+                </tbody>
+            </table>
+        </div>;
+    }
+}
+FlowList = AutoScrollMixin(FlowList);
 FlowList = VirtualScrollMixin(FlowList, {
     rowHeight: 32,
     placeholder: "tr",
     headHeight: 23
 });
 
+
 var FlowTable = React.createClass({
-    //FIXME mixins: [StickyHeadMixin, AutoScrollMixin],
     contextTypes: {
         view: React.PropTypes.object.isRequired
     },
@@ -169,23 +179,6 @@ var FlowTable = React.createClass({
         this.refs.flowList.scrollRowIntoView(
             this.context.view.index(flow)
         );
-    },
-    renderRow: function (flow) {
-        var selected = (flow === this.props.selected);
-        var highlighted =
-            (
-            this.context.view._highlight &&
-            this.context.view._highlight[flow.id]
-            );
-
-        return <FlowRow key={flow.id}
-            ref={flow.id}
-            flow={flow}
-            columns={this.state.columns}
-            selected={selected}
-            highlighted={highlighted}
-            selectFlow={this.props.selectFlow}
-        />;
     },
     render: function () {
         const flows = this.context.view.list;
