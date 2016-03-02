@@ -1,10 +1,10 @@
-import React from "react";
-
-import {Router, StickyHeadMixin} from "../common.js"
-import Nav from "./nav.js";
-import {Request, Response, Error} from "./messages.js";
-import Details from "./details.js";
-import Prompt from "../prompt.js";
+import React from "react"
+import ReactDOM from "react-dom"
+import {Router} from "../common.js"
+import Nav from "./nav.js"
+import {Request, Response, Error} from "./messages.js"
+import Details from "./details.js"
+import Prompt from "../prompt.js"
 
 
 var allTabs = {

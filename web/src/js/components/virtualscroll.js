@@ -14,11 +14,11 @@ const VirtualScrollMixin = (Component, defaultProps) => {
 
         componentDidMount() {
             this.onScroll();
-            window.addEventListener('resize', this.onScroll);
+            window.addEventListener('resize', this.onScroll.bind(this));
         }
 
         componentWillUnmount() {
-            window.removeEventListener('resize', this.onScroll);
+            window.removeEventListener('resize', this.onScroll.bind(this));
         }
 
         get viewport() {
@@ -41,7 +41,6 @@ const VirtualScrollMixin = (Component, defaultProps) => {
         }
 
         scrollRowIntoView(rowIndex) {
-            console.log(rowIndex);
             const {rowHeight, headHeight} = this.props;
 
             const rowTop = (rowIndex * rowHeight) + headHeight;
