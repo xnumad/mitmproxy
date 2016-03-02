@@ -177,7 +177,7 @@ var FlowTable = React.createClass({
     },
     scrollIntoView: function (flow) {
         this.refs.flowList.scrollRowIntoView(
-            this.context.view.index(flow)
+            this.context.view.indexOf(flow)
         );
     },
     render: function () {
