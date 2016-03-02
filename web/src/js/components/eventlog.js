@@ -1,7 +1,7 @@
 import React from "react"
 import {AutoScrollMixin, Router} from "./common.js"
 import {Query} from "../actions.js"
-import { VirtualScrollMixin } from "./virtualscroll.js"
+import VirtualScrollMixin from "./virtualscroll.js"
 import {StoreView} from "../store/view.js"
 import _ from "lodash"
 
@@ -30,59 +30,58 @@ var LogMessage = React.createClass({
     }
 });
 
-var EventLogContents = React.createClass({
-    contextTypes: {
-        eventStore: React.PropTypes.object.isRequired
-    },
-    mixins: [AutoScrollMixin, VirtualScrollMixin],
-    getInitialState: function () {
-        var filterFn = function (entry) {
-            return this.props.filter[entry.level];
-        };
-        var view = new StoreView(this.context.eventStore, filterFn.bind(this));
-        view.addListener("add", this.onEventLogChange);
-        view.addListener("recalculate", this.onEventLogChange);
 
-        return {
-            view: view
-        };
-    },
-    componentWillUnmount: function () {
-        this.state.view.close();
-    },
-    filter: function (entry) {
-        return this.props.filter[entry.level];
-    },
-    onEventLogChange: function () {
-        this.forceUpdate();
-    },
-    componentWillReceiveProps: function (nextProps) {
-        if (nextProps.filter !== this.props.filter) {
-            this.props.filter = nextProps.filter; // Dirty: Make sure that view filter sees the update.
-            this.state.view.recalculate();
-        }
-    },
-    getDefaultProps: function () {
-        return {
-            rowHeight: 45,
-            rowHeightMin: 15,
-            placeholderTagName: "div"
-        };
-    },
-    renderRow: function (elem) {
-        return <LogMessage key={elem.id} entry={elem}/>;
-    },
-    render: function () {
-        var entries = this.state.view.list;
-        var rows = this.renderRows(entries);
+let EventList = (props) => {
+    const rows = props.elements.map(
+        (elem) => <LogMessage key={elem.id} entry={elem}/>
+    );
 
-        return <pre onScroll={this.onScroll}>
-            { this.getPlaceholderTop(entries.length) }
-            {rows}
-            { this.getPlaceholderBottom(entries.length) }
+    return <pre onScroll={props.onScroll}>
+        { props.placeholderTop }
+        {rows}
+        { props.placeholderBottom }
         </pre>;
-    }
+};
+EventList = VirtualScrollMixin(EventList, {
+    rowHeight: 45,
+    rowHeightMin: 15,
+    placeholder: "div"
 });
+
+class EventLogContents extends React.Component {
+    componentWillMount() {
+        const view = new StoreView(this.context.eventStore, this.makeFilterFn(this.props.filter));
+        view.addListener("add", this.onEventLogChange.bind(this));
+        view.addListener("recalculate", this.onEventLogChange.bind(this));
+
+        this.setState({view});
+    }
+
+    makeFilterFn(filter) {
+        return (entry) => filter[entry.level];
+    }
+
+    componentWillUnmount() {
+        this.state.view.close();
+    }
+
+    onEventLogChange() {
+        this.forceUpdate();
+    }
+
+    componentWillReceiveProps(nextProps) {
+        if (nextProps.filter !== this.props.filter) {
+            this.state.view.recalculate(this.makeFilterFn(nextProps.filter));
+        }
+    }
+
+    render() {
+        return <EventList elements={this.state.view.list}/>;
+    }
+}
+EventLogContents.contextTypes = {
+    eventStore: React.PropTypes.object.isRequired
+};
 
 var ToggleFilter = React.createClass({
     toggle: function (e) {
@@ -138,7 +137,7 @@ var EventLog = React.createClass({
                         <ToggleFilter name="debug" active={this.state.filter.debug} toggleLevel={this.toggleLevel}/>
                         <ToggleFilter name="info" active={this.state.filter.info} toggleLevel={this.toggleLevel}/>
                         <ToggleFilter name="web" active={this.state.filter.web} toggleLevel={this.toggleLevel}/>
-                        <i onClick={this.close} className="fa fa-close"></i>
+                        <i onClick={this.close} className="fa fa-close"/>
                     </div>
 
                 </div>
