@@ -23,7 +23,7 @@ else:
         return strutils.always_bytes(x, "utf-8", "surrogateescape")
 
 
-class MessageData(basetypes.Serializable):
+class MessageData(basetypes.StateObject):
     def __eq__(self, other):
         if isinstance(other, MessageData):
             return self.__dict__ == other.__dict__
@@ -34,17 +34,6 @@ class MessageData(basetypes.Serializable):
 
     def __hash__(self):
         return hash(frozenset(self.__dict__.items()))
-
-    def set_state(self, state):
-        for k, v in state.items():
-            if k == "headers":
-                v = headers.Headers.from_state(v)
-            setattr(self, k, v)
-
-    def get_state(self):
-        state = vars(self).copy()
-        state["headers"] = state["headers"].get_state()
-        return state
 
     @classmethod
     def from_state(cls, state):
