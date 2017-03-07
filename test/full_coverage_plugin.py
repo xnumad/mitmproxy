@@ -28,13 +28,13 @@ def pytest_addoption(parser):
 def pytest_configure(config):
     global enable_coverage
     global no_full_cov
-
     enable_coverage = (
         len(config.getoption('file_or_dir')) == 0 and
         len(config.getoption('full_cov')) > 0 and
         config.pluginmanager.getplugin("_cov") is not None and
         config.pluginmanager.getplugin("_cov").cov_controller is not None and
-        config.pluginmanager.getplugin("_cov").cov_controller.cov is not None
+        config.pluginmanager.getplugin("_cov").cov_controller.cov is not None and
+        not config.getoption("-k")
     )
 
     c = configparser.ConfigParser()
