@@ -4,6 +4,7 @@ import logging
 import os.path
 import re
 from io import BytesIO
+from typing import Optional
 
 import mitmproxy.addons.view
 import mitmproxy.flow
@@ -17,6 +18,15 @@ from mitmproxy import http
 from mitmproxy import io
 from mitmproxy import log
 from mitmproxy import version
+
+
+# From the tr069 package.
+# We probably want to declare that as a dependency at some point.
+def extract_rpc_name(xml: str) -> Optional[str]:
+    message_type = re.search(r"<[-\w]+:Body>\s*<(.+?)[ /]*>", xml, re.IGNORECASE)
+    if message_type:
+        return message_type.group(1)
+    return None
 
 
 def flow_to_json(flow: mitmproxy.flow.Flow) -> dict:
@@ -65,6 +75,8 @@ def flow_to_json(flow: mitmproxy.flow.Flow) -> dict:
                 "timestamp_start": flow.request.timestamp_start,
                 "timestamp_end": flow.request.timestamp_end,
                 "is_replay": flow.request.is_replay,
+                "pretty_host": flow.request.pretty_host,
+                "rpc": extract_rpc_name(flow.request.get_text(strict=False)),
             }
         if flow.response:
             if flow.response.raw_content:
@@ -83,6 +95,7 @@ def flow_to_json(flow: mitmproxy.flow.Flow) -> dict:
                 "timestamp_start": flow.response.timestamp_start,
                 "timestamp_end": flow.response.timestamp_end,
                 "is_replay": flow.response.is_replay,
+                "rpc": extract_rpc_name(flow.response.get_text(strict=False)),
             }
     f.get("server_conn", {}).pop("cert", None)
 
