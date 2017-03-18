@@ -17,6 +17,7 @@ from mitmproxy import http
 from mitmproxy import io
 from mitmproxy import log
 from mitmproxy import version
+from tr069.data import soap
 
 
 def flow_to_json(flow: mitmproxy.flow.Flow) -> dict:
@@ -66,6 +67,7 @@ def flow_to_json(flow: mitmproxy.flow.Flow) -> dict:
                 "timestamp_end": flow.request.timestamp_end,
                 "is_replay": flow.request.is_replay,
                 "pretty_host": flow.request.pretty_host,
+                "rpc": soap.extract_rpc_name(flow.request.get_text(strict=False)),
             }
         if flow.response:
             if flow.response.raw_content:
@@ -84,6 +86,7 @@ def flow_to_json(flow: mitmproxy.flow.Flow) -> dict:
                 "timestamp_start": flow.response.timestamp_start,
                 "timestamp_end": flow.response.timestamp_end,
                 "is_replay": flow.response.is_replay,
+                "rpc": soap.extract_rpc_name(flow.response.get_text(strict=False)),
             }
     f.get("server_conn", {}).pop("cert", None)
     f.get("client_conn", {}).pop("mitmcert", None)

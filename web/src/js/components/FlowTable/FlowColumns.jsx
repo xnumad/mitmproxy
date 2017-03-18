@@ -49,6 +49,9 @@ IconColumn.getIcon = flow => {
     if (contentType.indexOf('html') >= 0) {
         return 'resource-icon-document'
     }
+    if(flow.request.rpc || flow.response.rpc){
+        return 'resource-icon-document'
+    }
 
     return 'resource-icon-plain'
 }
@@ -79,6 +82,19 @@ export function PathColumn({ flow }) {
 
 PathColumn.headerClass = 'col-path'
 PathColumn.headerName = 'Path'
+
+export function RPCColumn({ flow }) {
+
+    return (
+        <td className="col-rpc">
+            <div className="client">{flow.request.rpc || <i>client finished</i>}</div>
+            <div className="server">{flow.response.rpc || <i>session finished</i>}</div>
+        </td>
+    )
+}
+
+RPCColumn.headerClass = 'col-rpc'
+RPCColumn.headerName = 'RPC'
 
 export function MethodColumn({ flow }) {
     return (
@@ -133,9 +149,9 @@ TimeColumn.headerName = 'Time'
 export default [
     TLSColumn,
     IconColumn,
-    PathColumn,
-    MethodColumn,
-    StatusColumn,
+    RPCColumn,
+//    MethodColumn,
+//    StatusColumn,
     SizeColumn,
     TimeColumn,
 ]

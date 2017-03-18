@@ -113,6 +113,21 @@
             color: darkred;
         }
     }
+    .col-rpc {
+        .client, .server {
+            font-size: 10px;
+
+        }
+        .server {
+            //margin-left: 5px;
+        }
+        .client:before {
+            content: ">> ";
+        }
+        .server:before {
+            content: "<< ";
+        }
+    }
     .col-method {
         width: 60px;
     }
