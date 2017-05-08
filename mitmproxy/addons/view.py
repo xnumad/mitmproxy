@@ -69,7 +69,7 @@ class _OrderKey:
 
 
 class OrderRequestStart(_OrderKey):
-    def generate(self, f: http.HTTPFlow) -> datetime.datetime:
+    def generate(self, f: http.HTTPFlow) -> int:
         return f.request.timestamp_start or 0
 
 
