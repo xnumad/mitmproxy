@@ -111,6 +111,13 @@ class ClientConnection(tcp.BaseHandler, stateobject.StateObject):
             message = b''.join(message)
         self.wfile.write(message)
         self.wfile.flush()
+        return len(message)
+
+    def recv(self, n):
+        return self.rfile.read(n)
+
+    def close(self):
+        self.finish()
 
     @classmethod
     def from_state(cls, state):
@@ -276,6 +283,13 @@ class ServerConnection(tcp.TCPClient, stateobject.StateObject):
             message = b''.join(message)
         self.wfile.write(message)
         self.wfile.flush()
+        return len(message)
+
+    def recv(self, n):
+        return self.rfile.read(n)
+
+    def close(self):
+        self.finish()
 
     def establish_ssl(self, clientcerts, sni, **kwargs):
         if sni and not isinstance(sni, str):

@@ -1,3 +1,4 @@
+import glob
 import os
 import runpy
 from codecs import open
@@ -13,6 +14,11 @@ with open(os.path.join(here, 'README.rst'), encoding='utf-8') as f:
     long_description = f.read()
 
 VERSION = runpy.run_path(os.path.join(here, "mitmproxy", "version.py"))["VERSION"]
+
+contentviews = [
+    os.path.splitext(os.path.basename(x))[0]
+    for x in glob.glob(os.path.join(here, "mitmproxy", "contentviews", "[!_]*"))
+]
 
 setup(
     name="mitmproxy",
@@ -55,6 +61,10 @@ setup(
             "mitmweb = mitmproxy.tools.main:mitmweb",
             "pathod = pathod.pathod_cmdline:go_pathod",
             "pathoc = pathod.pathoc_cmdline:go_pathoc"
+        ],
+        "mitmproxy.contentviews": [
+            "{0} = mitmproxy.contentviews.{0}".format(x)
+            for x in contentviews
         ]
     },
     # https://packaging.python.org/en/latest/requirements/#install-requires
