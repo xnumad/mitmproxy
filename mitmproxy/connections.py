@@ -1,11 +1,12 @@
 import time
 
 import os
+import typing
 import uuid
 
 from mitmproxy import stateobject
 from mitmproxy import certs
-from mitmproxy.net import tcp
+from mitmproxy.net import tcp, tls
 from mitmproxy.utils import strutils
 
 
@@ -26,6 +27,7 @@ class ClientConnection(tcp.BaseHandler, stateobject.StateObject):
         cipher_name: The current used cipher
         alpn_proto_negotiated: The negotiated application protocol
         tls_version: TLS version
+        tls_extensions: TLS ClientHello extensions
     """
 
     def __init__(self, client_connection, address, server):
@@ -51,6 +53,7 @@ class ClientConnection(tcp.BaseHandler, stateobject.StateObject):
         self.cipher_name = None
         self.alpn_proto_negotiated = None
         self.tls_version = None
+        self.tls_extensions = None
 
     def connected(self):
         return bool(self.connection) and not self.finished
@@ -96,6 +99,7 @@ class ClientConnection(tcp.BaseHandler, stateobject.StateObject):
         cipher_name=str,
         alpn_proto_negotiated=bytes,
         tls_version=str,
+        tls_extensions=typing.List[typing.Tuple[int, bytes]],
     )
 
     def send(self, message):
@@ -125,6 +129,7 @@ class ClientConnection(tcp.BaseHandler, stateobject.StateObject):
             cipher_name=None,
             alpn_proto_negotiated=None,
             tls_version=None,
+            tls_extensions=None,
         ))
 
     def convert_to_tls(self, cert, *args, **kwargs):
@@ -139,6 +144,14 @@ class ClientConnection(tcp.BaseHandler, stateobject.StateObject):
         self.cipher_name = self.connection.get_cipher_name()
         self.alpn_proto_negotiated = self.get_alpn_proto_negotiated()
         self.tls_version = self.connection.get_protocol_version_name()
+
+        # Unfortunately OpenSSL provides no way to expose all TLS extensions, so we do this dance
+        # here and use our Kaitai parser.
+        try:
+            client_hello = tls.ClientHello.from_client_conn(self)
+            self.tls_extensions = client_hello.extensions
+        except Exception:
+            pass  # if this fails, we don't want everything to go down.
 
     def finish(self):
         super().finish()

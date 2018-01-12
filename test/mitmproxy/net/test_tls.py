@@ -77,3 +77,17 @@ class TestClientHello:
         c = tls.ClientHello(data)
         assert c.sni == 'example.com'
         assert c.alpn_protocols == [b'h2', b'http/1.1']
+        assert c.extensions == [
+            (65281, b'\x00'),
+            (0, b'\x00\x0e\x00\x00\x0bexample.com'),
+            (23, b''),
+            (35, b''),
+            (13, b'\x00\x10\x06\x01\x06\x03\x05\x01\x05\x03\x04\x01\x04\x03\x02\x01\x02\x03'),
+            (5, b'\x01\x00\x00\x00\x00'),
+            (18, b''),
+            (16, b'\x00\x0c\x02h2\x08http/1.1'),
+            (30032, b''),
+            (11, b'\x01\x00'),
+            (10, b'\x00\x06\x00\x1d\x00\x17\x00\x18')
+        ]
+
