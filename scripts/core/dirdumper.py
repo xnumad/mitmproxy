@@ -1,8 +1,8 @@
 import argparse
 import os
 import re
-from urllib2 import unquote 
 from mitmproxy.net.http import encoding
+from urllib.parse import unquote
 
 forbidden_chars = re.compile("[^\\w\\-\\.]")
 
