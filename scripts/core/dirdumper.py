@@ -15,7 +15,7 @@ parser.add_argument('--dump-request-content', action='store_true',
 
 args = None
 
-def start(ctx, argv):
+def start(argv):
     global args
     args = parser.parse_args(argv[1:])
 
@@ -119,11 +119,11 @@ def dump(flow, attr):
 
 
 
-def request(ctx, flow):
+def request(flow):
 	if args.dump_request_content:
 		dump(flow,"request")
 
-def response(ctx, flow):
+def response(flow):
 	dump(flow,"response")
 
 if __name__ == "__main__":
