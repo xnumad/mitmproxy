@@ -92,7 +92,7 @@ def dump(flow, attr):
 	d, filename = os.path.split(filename)
 	filename = os.path.join(makedirs(d),filename)
 
-	content = str(message.get_decoded_content())
+	content = message.get_content()
 
 	#If filename is a directory, rename it.
 	if(os.path.isdir(filename)):
