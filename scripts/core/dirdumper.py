@@ -80,11 +80,11 @@ def dump(flow, attr):
 	#If our path is too long, remove directories in the middle
 	dirRemoved = False
 	while sum(len(s) for s in path) > 150:
-		del path[ len(path) / 2 ]
+		del path[ int(len(path) / 2) ]
 		dirRemoved = True
 	# Add placeholder directory if we removed at least one directory
 	if dirRemoved:
-		splitpos = (len(path)+1) / 2
+		splitpos = int((len(path)+1) / 2)
 		path = path[:splitpos] + ["[...]"] + path[splitpos:]
 
 	filename = os.path.join(args.dump_dir,*path)
